@@ -14,10 +14,13 @@ def reset_activities():
 
 
 def test_get_activities_returns_activity_data():
+    # Arrange
     reset_activities()
 
+    # Act
     response = client.get("/activities")
 
+    # Assert
     assert response.status_code == 200
     data = response.json()
     assert "Chess Club" in data
@@ -25,38 +28,45 @@ def test_get_activities_returns_activity_data():
 
 
 def test_signup_adds_student_to_activity():
+    # Arrange
     reset_activities()
     activity_name = "Chess Club"
     email = "student@example.edu"
 
+    # Act
     response = client.post(f"/activities/{activity_name}/signup?email={email}")
 
+    # Assert
     assert response.status_code == 200
     assert response.json()["message"] == f"Signed up {email} for {activity_name}"
     assert email in app_module.activities[activity_name]["participants"]
 
 
 def test_duplicate_signup_is_rejected():
+    # Arrange
     reset_activities()
     activity_name = "Chess Club"
     email = "michael@mergington.edu"
 
+    # Act
     response = client.post(f"/activities/{activity_name}/signup?email={email}")
 
+    # Assert
     assert response.status_code == 400
     assert response.json()["detail"] == "Student already signed up for this activity"
 
 
 def test_unregister_removes_student_from_activity():
+    # Arrange
     reset_activities()
     activity_name = "Chess Club"
     email = "student@example.edu"
+    client.post(f"/activities/{activity_name}/signup?email={email}")
 
-    signup_response = client.post(f"/activities/{activity_name}/signup?email={email}")
-    assert signup_response.status_code == 200
-
+    # Act
     delete_response = client.delete(f"/activities/{activity_name}/participants/{email}")
 
+    # Assert
     assert delete_response.status_code == 200
 
     response = client.get("/activities")
